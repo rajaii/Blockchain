@@ -17,12 +17,13 @@ def proof_of_work(block):
     proof = 0
     while not valid_proof(block_string, proof):
         proof += 1
+
     return proof
 
 
 def valid_proof(block_string, proof):
     """
-    Validates the Proof:  Does hash(block_string, proof) contain 3
+    Validates the Proof:  Does hash(block_string, proof) contain 6
     leading zeroes?  Return true if the proof is valid
     :param block_string: <string> The stringified block to use to
     check in combination with `proof`
@@ -49,10 +50,12 @@ if __name__ == '__main__':
     print("ID is", id)
     f.close()
 
+    coins_mined = 0
+
     # Run forever until interrupted
     while True:
         r = requests.get(url=node + "/last_block")
-        # Handle non-json response
+        # Handle non-json response (stretch)
         try:
             data = r.json()
         except ValueError:
@@ -62,24 +65,19 @@ if __name__ == '__main__':
             break
 
         # TODO: Get the block from `data` and use it to look for a new proof
-        b = data['last_block']
-        print('starting on proof')
-        new_proof = proof_of_work(b)
-        print('proof finished!')
-        coins_mined = 0
+        new_proof = proof_of_work(data['last_block'])
+
         # When found, POST it to the server {"proof": new_proof, "id": id}
         post_data = {"proof": new_proof, "id": id}
 
         r = requests.post(url=node + "/mine", json=post_data)
         data = r.json()
-        
 
         # TODO: If the server responds with a 'message' 'New Block Forged'
         # add 1 to the number of coins mined and print it.  Otherwise,
         # print the message from the server.
-        if data:
-            coins_mined += 2
-            print(f'2 coins mined.  you now have {coins_mined} coins')
+        if data["message"] == "New Block Forged":
+            coins_mined += 1
+            print(f"Total coins mined: {coins_mined}")
         else:
-            print(data)
-
+            print(data["message"])

@@ -1,2 +1,2 @@
-just check if error logic on line 84 of miner.py is sound
+line 84 of miner
 
